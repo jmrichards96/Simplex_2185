@@ -32,6 +32,7 @@ class AppClass
 	glm::vec3 m_v3Color = glm::vec3(-1.0f); //Color of shape
 
 	bool m_bRunning = true; //Running Flag
+	bool m_bComplementary = false; //Show complementary colors
 		
 public:
 	/*
@@ -118,6 +119,12 @@ private:
 	OUTPUT: ---
 	*/
 	void ProcessKeyboard(sf::Event a_event);
+	/*
+	USAGE: Manage the response of key releases
+	ARGUMENTS: ---
+	OUTPUT: ---
+	*/
+	void ProcessKeyboardRelease(sf::Event a_event);
 };
 
 #endif //__SFMLAPPCLASS_H_

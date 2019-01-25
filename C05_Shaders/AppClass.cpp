@@ -33,6 +33,10 @@ void AppClass::Run(void)
 			{
 				ProcessKeyboard(event);
 			}
+			else if (event.type == sf::Event::KeyReleased)
+			{
+				ProcessKeyboardRelease(event);
+			}
 		}
 
 		Display();
@@ -116,6 +120,11 @@ void AppClass::ProcessKeyboard(sf::Event a_event)
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
 		m_v3Color = glm::vec3(-1.0f, -1.0f, -1.0f);
 }
+void AppClass::ProcessKeyboardRelease(sf::Event a_event)
+{
+	 if (a_event.key.code == sf::Keyboard::Space)
+		m_bComplementary = !m_bComplementary;
+}
 void AppClass::Display(void)
 {
 	// clear the buffers
@@ -123,7 +132,10 @@ void AppClass::Display(void)
 
 	//read uniforms and send values
 	GLuint SolidColor = glGetUniformLocation(m_uShaderProgramID, "SolidColor");
-	glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
+	if (!m_bComplementary)
+		glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
+	else
+		glUniform3f(SolidColor, 1.0f - m_v3Color.r, 1.0f - m_v3Color.g, -2.0f);
 
 	//draw content
 	glDrawArrays(GL_TRIANGLES, 0, 3);
