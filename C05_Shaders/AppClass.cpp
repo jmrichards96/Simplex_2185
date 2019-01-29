@@ -71,7 +71,7 @@ void AppClass::InitOpenGL(void)
 }
 void AppClass::InitShaders(void)
 {
-	m_uShaderProgramID = LoadShaders("Shaders//BasicColor.vs", "Shaders//BasicColor.fs");
+	m_uShaderProgramID = LoadShaders("Shaders//BasicColor.vs", "Shaders//BasicColorInvert.fs");
 	glUseProgram(m_uShaderProgramID);
 }
 void AppClass::InitVariables(void)
@@ -122,8 +122,12 @@ void AppClass::ProcessKeyboard(sf::Event a_event)
 }
 void AppClass::ProcessKeyboardRelease(sf::Event a_event)
 {
-	 if (a_event.key.code == sf::Keyboard::Space)
+	if (a_event.key.code == sf::Keyboard::Space) {
+		//read complimentary flag and send values
+		GLuint Complimentary = glGetUniformLocation(m_uShaderProgramID, "Complimentary");
+		glUniform1i(Complimentary, m_bComplementary);
 		m_bComplementary = !m_bComplementary;
+	}
 }
 void AppClass::Display(void)
 {
@@ -132,10 +136,7 @@ void AppClass::Display(void)
 
 	//read uniforms and send values
 	GLuint SolidColor = glGetUniformLocation(m_uShaderProgramID, "SolidColor");
-	if (!m_bComplementary)
-		glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
-	else
-		glUniform3f(SolidColor, 1.0f - m_v3Color.r, 1.0f - m_v3Color.g, -2.0f);
+	glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
 
 	//draw content
 	glDrawArrays(GL_TRIANGLES, 0, 3);
