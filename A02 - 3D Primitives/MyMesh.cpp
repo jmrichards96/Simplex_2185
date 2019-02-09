@@ -275,9 +275,25 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	// height offset from origin
+	float heightValue = a_fHeight / 2;
+	float innerAngle = 2 * PI / a_nSubdivisions;
+	// peak of the cone
+	vector3 centerPoint = vector3(0.0f, heightValue, 0.0f);
+	vector3 lastPos = vector3(a_fRadius, -heightValue, 0.0f);
+	vector3 currentPos;
+	for (int i = 1; i <= a_nSubdivisions; ++i)
+	{
+		float angle = innerAngle * i;
+		float x = cosf(angle) * a_fRadius;
+		float y = sinf(angle) * a_fRadius;
+		currentPos = glm::vec3(x, -heightValue, y);
+		// Add base tri
+		AddTri(vector3(0.0f, -heightValue, 0.0f), lastPos, currentPos);
+		// Add cone tri
+		AddTri(centerPoint, currentPos, lastPos);
+		lastPos = currentPos;
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -299,9 +315,25 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	// height offset from origin
+	float heightValue = a_fHeight / 2;
+	float innerAngle = 2 * PI / a_nSubdivisions;
+	vector3 lastPos = vector3(a_fRadius, -heightValue, 0.0f);
+	vector3 currentPos;
+	for (int i = 1; i <= a_nSubdivisions; ++i)
+	{
+		float angle = innerAngle * i;
+		float x = cosf(angle) * a_fRadius;
+		float y = sinf(angle) * a_fRadius;
+		currentPos = glm::vec3(x, -heightValue, y);
+		// Add base tri
+		AddTri(vector3(0.0f, -heightValue, 0.0f), lastPos, currentPos);
+		// Add top tri
+		AddTri(vector3(0.0f, heightValue, 0.0f), vector3(currentPos.x, heightValue, currentPos.z), vector3(lastPos.x, heightValue, lastPos.z));
+		// Add side quad
+		AddQuad(currentPos, lastPos, vector3(currentPos.x, heightValue, currentPos.z), vector3(lastPos.x, heightValue, lastPos.z));
+		lastPos = currentPos;
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -329,9 +361,32 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	// height offset from origin
+	float heightValue = a_fHeight / 2;
+	float innerAngle = 2 * PI / a_nSubdivisions;
+	vector3 lastOuterPos = vector3(a_fOuterRadius, -heightValue, 0.0f);
+	vector3 lastInnerPos = vector3(a_fInnerRadius, -heightValue, 0.0f);
+	vector3 currentOuterPos;
+	vector3 currentInnerPos;
+	for (int i = 1; i <= a_nSubdivisions; ++i)
+	{
+		float angle = innerAngle * i;
+		float x = cosf(angle);
+		float y = sinf(angle);
+		currentOuterPos = glm::vec3(x * a_fOuterRadius, -heightValue, y * a_fOuterRadius);
+		currentInnerPos = glm::vec3(x * a_fInnerRadius, -heightValue, y * a_fInnerRadius);
+		// Add base quad
+		AddQuad(currentInnerPos, lastInnerPos, currentOuterPos, lastOuterPos);
+		// Add top quad
+		AddQuad(vector3(lastInnerPos.x, heightValue, lastInnerPos.z), vector3(currentInnerPos.x, heightValue, currentInnerPos.z), 
+			vector3(lastOuterPos.x, heightValue, lastOuterPos.z), vector3(currentOuterPos.x, heightValue, currentOuterPos.z));
+		// Add outer quad
+		AddQuad(currentOuterPos, lastOuterPos, vector3(currentOuterPos.x, heightValue, currentOuterPos.z), vector3(lastOuterPos.x, heightValue, lastOuterPos.z));
+		// Add inner quad
+		AddQuad(lastInnerPos, currentInnerPos, vector3(lastInnerPos.x, heightValue, lastInnerPos.z), vector3(currentInnerPos.x, heightValue, currentInnerPos.z));
+		lastOuterPos = currentOuterPos;
+		lastInnerPos = currentInnerPos;
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -386,9 +441,62 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	Release();
 	Init();
 
-	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
-	// -------------------------------
+	if (a_nSubdivisions < 2)
+	{
+		return;
+	}
+	// height offset from origin
+	float heightValue = a_fRadius;
+	float innerAngle = PI / a_nSubdivisions;
+
+	// calculate the intermediate points of the sphere.
+	std::vector<std::vector<vector3>> spherePoints(a_nSubdivisions - 1);
+	for (int i = 1; i < a_nSubdivisions; ++i)
+	{
+		float angle = innerAngle * i;
+		float height = cosf(angle) * a_fRadius;
+		float radius = sinf(angle) * a_fRadius;
+
+
+		float innerAngle2 = 2 * PI / a_nSubdivisions;
+		vector3 lastPos = vector3(radius, height, 0.0f);
+		vector3 currentPos;
+		for (int j = 1; j <= a_nSubdivisions; ++j)
+		{
+			float angle = innerAngle2 * j;
+			float x = cosf(angle) * radius;
+			float y = sinf(angle) * radius;
+			currentPos = glm::vec3(x, height, y);
+			spherePoints[i - 1].push_back(currentPos);
+			lastPos = currentPos;
+		}
+	}
+
+	// top of the sphere
+	vector3 topCenter = vector3(0.0f, heightValue, 0.0f);
+	// bottom of the sphere
+	vector3 bottomCenter = vector3(0.0f, -heightValue, 0.0f);
+	for (int i = -1; i < a_nSubdivisions - 1; ++i)
+	{
+		for (int j = 0; j < a_nSubdivisions; ++j) 
+		{
+			if (i == -1)
+			{
+				// Add the top of tris of the sphere
+				AddTri(topCenter, spherePoints[0][(j + 1) % a_nSubdivisions], spherePoints[0][j]);
+			}
+			else if (i == a_nSubdivisions - 2)
+			{
+				// Add the bottom tris of the sphere
+				AddTri(bottomCenter, spherePoints[i][j], spherePoints[i][(j + 1) % a_nSubdivisions]);
+			}
+			else 
+			{
+				// Add the middle quads of the sphere
+				AddQuad(spherePoints[i][j], spherePoints[i][(j + 1) % a_nSubdivisions], spherePoints[i + 1][j], spherePoints[i + 1][(j + 1) % a_nSubdivisions]);
+			}
+		}
+	}
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
