@@ -21,7 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C03_ClassStructure", "C03_C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C04_ShaderCompiler", "C04_ShaderCompiler\C04_ShaderCompiler.vcxproj", "{C15B09BC-570B-4098-8967-037462DFDF62}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E03_Shaders", "C05_Shaders\C05_Shaders.vcxproj", "{E60B5B2D-19E8-4FD3-BFF7-CB908C5A651A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E03 - Shaders", "C05_Shaders\C05_Shaders.vcxproj", "{E60B5B2D-19E8-4FD3-BFF7-CB908C5A651A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D_GLFW_Application", "D_GLFW_Application\D_GLFW_Application.vcxproj", "{837A57D3-2A9F-4985-B2EA-E18558EEAA43}"
 EndProject
@@ -114,6 +114,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E09 - ARBB", "E09 - ARBB\E09 - ARBB.vcxproj", "{9557AEB2-A186-4645-B8D0-678D133C2EFA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E10 - EntityManager", "E10 - EntityManager\E10 - EntityManager.vcxproj", "{870B329D-6DED-48D2-8E86-0893E3BB8DAB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E05_Transformations", "E05_Transformations\E05_Transformations.vcxproj", "{895D416B-8B22-486F-AD30-D1E5176E632F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -311,6 +313,10 @@ Global
 		{870B329D-6DED-48D2-8E86-0893E3BB8DAB}.Debug|x86.Build.0 = Debug|Win32
 		{870B329D-6DED-48D2-8E86-0893E3BB8DAB}.Release|x86.ActiveCfg = Release|Win32
 		{870B329D-6DED-48D2-8E86-0893E3BB8DAB}.Release|x86.Build.0 = Release|Win32
+		{895D416B-8B22-486F-AD30-D1E5176E632F}.Debug|x86.ActiveCfg = Debug|Win32
+		{895D416B-8B22-486F-AD30-D1E5176E632F}.Debug|x86.Build.0 = Debug|Win32
+		{895D416B-8B22-486F-AD30-D1E5176E632F}.Release|x86.ActiveCfg = Release|Win32
+		{895D416B-8B22-486F-AD30-D1E5176E632F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -363,6 +369,7 @@ Global
 		{0BFF89F3-1A79-4B83-A0EB-7C16FDA662E1} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
 		{9557AEB2-A186-4645-B8D0-678D133C2EFA} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
 		{870B329D-6DED-48D2-8E86-0893E3BB8DAB} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
+		{895D416B-8B22-486F-AD30-D1E5176E632F} = {78C06654-E155-40A8-97F7-7BA1E50977C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A36545A6-DAAA-4856-BDB7-57C29F88BC6B}
