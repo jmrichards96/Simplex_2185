@@ -27,16 +27,30 @@ void Application::Display(void)
 
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix(); //view Matrix
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix(); //Projection Matrix
+	matrix4 m4Model = IDENTITY_M4;
 	
 	//Get a timer
 	static uint uClock = m_pSystem->GenClock();
 	float fTimer = m_pSystem->GetTimeSinceStart(uClock);
 
+	glm::quat q1 = glm::angleAxis(glm::radians(120.0f), AXIS_Z);
+	quaternion q2 = glm::angleAxis(glm::radians(30.0f), AXIS_X);
+
+
+	float fTotalTime = 3.75f;
+	float fPercentage = MapValue(fTimer, 0.0f, fTotalTime, 0.0f, 1.0f);
+
+	//quaternion q3 = glm::mix(q1, q2, fPercentage);
+
+	quaternion q3 = q2 * q1;
+
 	//calculate the current position
+	/*
 	matrix4 m4Rotation = glm::rotate(IDENTITY_M4, glm::radians(fTimer * 60.0f), vector3(0.0f, 0.0f, 1.0f));
 	matrix4 m4Model;
 	for (uint i = 0; i < 2500; ++i)
 		m4Model = m4Rotation * glm::translate(IDENTITY_M4, vector3(2.5f, 0.0f, 0.0f)) * glm::transpose(m4Rotation);
+	*/
 	
 	/*
 	//extra part, how to rotate around a point (in this case the base of the cone)
@@ -46,7 +60,7 @@ void Application::Display(void)
 	*/
 
 	// render the object
-	m_pMesh->Render(m4Projection, m4View, m4Model);
+	m_pMesh->Render(m4Projection, m4View, ToMatrix4(q3));
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
