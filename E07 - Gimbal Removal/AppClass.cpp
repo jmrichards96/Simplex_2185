@@ -29,9 +29,12 @@ void Application::Display(void)
 	quaternion yQuat = glm::angleAxis(glm::radians(m_v3Rotation.y), AXIS_Y);
 	quaternion zQuat = glm::angleAxis(glm::radians(m_v3Rotation.z), AXIS_Z);
 
-	quaternion rotatedModel = xQuat * yQuat * zQuat;
+	m_qOrientation = m_qOrientation * xQuat * yQuat * zQuat;
+	m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_qOrientation));
 
-	m_pMesh->Render(m4Projection, m4View, m_m4Model * ToMatrix4(rotatedModel));
+	m_v3Rotation.x = 0;
+	m_v3Rotation.y = 0;
+	m_v3Rotation.z = 0;
 
 	/*
 	m_m4Model = glm::rotate(IDENTITY_M4, glm::radians(m_v3Rotation.x), vector3(1.0f, 0.0f, 0.0f));
@@ -40,9 +43,6 @@ void Application::Display(void)
 	m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_m4Model));
 	*/
 
-	//m_qOrientation = m_qOrientation * glm::angleAxis(glm::radians(1.0f), vector3(1.0f));
-	//m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_qOrientation));
-	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();
 	
