@@ -437,6 +437,7 @@ void Application::ProcessKeyboard(void)
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 	{
+		m_qOrientation = IDENTITY_M4;
 		m_v3Rotation = vector3(0.0f);
 	}
 }
