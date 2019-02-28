@@ -14,8 +14,11 @@ class MyCamera
 {
 	vector3 m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
 	vector3 m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
-	vector3 m_v3Above = vector3(0.0f, 1.0f, 0.0f); //What is above the camera
-	quaternion m_qOrientation = IDENTITY_M4; //What direction I'm looking
+	vector3 m_v3Above = vector3(0.0f, 1.0f, 10.0f); //What is above the camera
+
+	vector3 m_v3Forward = vector3(0.0f, 0.0f, -1.0f); //What direction is forward
+	vector3 m_v3Right = vector3(1.0f, 0.0f, 0.0f); //cross of forward and up
+	vector3 m_v3Up = vector3(0.0f, 1.0f, 0.0f); //What direction is forward
 
 	bool m_bPerspective = true; //perspective view? False is Orthographic
 
