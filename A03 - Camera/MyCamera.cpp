@@ -154,7 +154,7 @@ void MyCamera::MoveForward(float a_fDistance)
 {
 	//The following is just an example and does not take in account the forward vector (AKA view vector)
 	m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
-	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance);
+	m_v3Target = m_v3Position + vector3(0.0f, 0.0f, -1.0f) * m_qOrientation;
 	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance);
 }
 
@@ -162,7 +162,7 @@ void MyCamera::MoveVertical(float a_fDistance)
 {
 	//The following is just an example and does not take in account the forward vector (AKA view vector)
 	m_v3Position += vector3(0.0f, -a_fDistance, 0.0f);
-	m_v3Target += vector3(0.0f, -a_fDistance, 0.0f);
+	m_v3Target = m_v3Position + vector3(0.0f, 0.0f, -1.0f) * m_qOrientation;
 	m_v3Above += vector3(0.0f, -a_fDistance, 0.0f);
 }
 
@@ -170,6 +170,16 @@ void MyCamera::MoveSideways(float a_fDistance)
 {
 	//The following is just an example and does not take in account the forward vector (AKA view vector)
 	m_v3Position += vector3(-a_fDistance, 0.0f, 0.0f);
-	m_v3Target += vector3(-a_fDistance, 0.0f, 0.0f);
+	m_v3Target = m_v3Position + vector3(0.0f, 0.0f, -1.0f) * m_qOrientation;
 	m_v3Above += vector3(-a_fDistance, 0.0f, 0.0f);
+}
+
+void MyCamera::UpdateDirection(float x, float y)
+{
+	glm::normalize(m_qOrientation);
+	quaternion xQuat = glm::angleAxis(glm::radians(x), AXIS_X);
+	quaternion yQuat = glm::angleAxis(glm::radians(y), AXIS_Y);
+	m_qOrientation = m_qOrientation * xQuat * yQuat;
+	m_v3Above = m_v3Position + m_qOrientation * vector3(0.0f, 1.0f, 0.0f);
+	m_v3Target = m_v3Position + m_qOrientation * vector3(0.0f, 0.0f, -1.0f);
 }
