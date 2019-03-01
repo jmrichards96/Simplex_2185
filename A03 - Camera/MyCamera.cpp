@@ -179,7 +179,7 @@ void MyCamera::UpdateDirection(float a_fAngleX, float a_fAngleY)
 	// Do not rotate upside down
 	if (newUp.y > 0)
 	{
-		// rotate up/dpwm
+		// rotate up/dowm
 		m_v3Forward = glm::rotate(xQuat, m_v3Forward);
 		m_v3Right = glm::rotate(xQuat, m_v3Right);
 		m_v3Up = glm::rotate(xQuat, m_v3Up);
