@@ -149,35 +149,47 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 			m_v2NearFar.x, m_v2NearFar.y); //near and far
 	}
 }
-
+// Move forward or back the given amount
 void MyCamera::MoveForward(float a_fDistance)
 {
 	m_v3Position += m_v3Forward * a_fDistance;
 	m_v3Target += m_v3Forward * a_fDistance;
 	m_v3Above += m_v3Forward * a_fDistance;
 }
-
+// Move up or down the given amount
 void MyCamera::MoveVertical(float a_fDistance)
 {
 	m_v3Position += m_v3Up * a_fDistance;
 	m_v3Target += m_v3Up * a_fDistance;
 	m_v3Above += m_v3Up * a_fDistance;
 }
-
+// Move left or right the given amount
 void MyCamera::MoveSideways(float a_fDistance)
 {
-	m_v3Position += m_v3Right * a_fDistance;
-	m_v3Target += m_v3Right * a_fDistance;
-	m_v3Above += m_v3Right * a_fDistance;
+	m_v3Position += m_v3Right * -a_fDistance;
+	m_v3Target += m_v3Right * -a_fDistance;
+	m_v3Above += m_v3Right * -a_fDistance;
 }
-
-void MyCamera::UpdateDirection(float x, float y)
+// Rotate the camera based on the given x and y values
+void MyCamera::UpdateDirection(float a_fAngleX, float a_fAngleY)
 {
-	quaternion xQuat = glm::angleAxis(glm::radians(-x), m_v3Right);
-	quaternion yQuat = glm::angleAxis(glm::radians(y), AXIS_Y);
-	m_v3Forward = glm::rotate(m_qOrientation, m_v3Forward);
-	m_v3Right = glm::rotate(m_qOrientation, m_v3Right);
-	m_v3Up = glm::rotate(m_qOrientation, m_v3Up);
-	m_v3Above = m_v3Position + glm::rotate(m_qOrientation, m_v3Up);;
-	m_v3Target = m_v3Position + glm::rotate(m_qOrientation, m_v3Forward);
+	quaternion xQuat = glm::angleAxis(glm::radians(-a_fAngleX), m_v3Right);
+	quaternion yQuat = glm::angleAxis(glm::radians(a_fAngleY), AXIS_Y);
+	vector3 newUp = glm::rotate(xQuat, m_v3Up);
+	// Do not rotate upside down
+	if (newUp.y > 0)
+	{
+		// rotate up/dpwm
+		m_v3Forward = glm::rotate(xQuat, m_v3Forward);
+		m_v3Right = glm::rotate(xQuat, m_v3Right);
+		m_v3Up = glm::rotate(xQuat, m_v3Up);
+		m_v3Above = m_v3Position + glm::rotate(xQuat, m_v3Up);;
+		m_v3Target = m_v3Position + glm::rotate(xQuat, m_v3Forward);
+	}
+	// rotate left/right
+	m_v3Forward = glm::rotate(yQuat, m_v3Forward);
+	m_v3Right = glm::rotate(yQuat, m_v3Right);
+	m_v3Up = glm::rotate(yQuat, m_v3Up);
+	m_v3Above = m_v3Position + glm::rotate(yQuat, m_v3Up);;
+	m_v3Target = m_v3Position + glm::rotate(yQuat, m_v3Forward);
 }

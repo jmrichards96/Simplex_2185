@@ -17,8 +17,8 @@ class MyCamera
 	vector3 m_v3Above = vector3(0.0f, 1.0f, 10.0f); //What is above the camera
 
 	vector3 m_v3Forward = vector3(0.0f, 0.0f, -1.0f); //What direction is forward
-	vector3 m_v3Right = vector3(1.0f, 0.0f, 0.0f); //cross of forward and up
-	vector3 m_v3Up = vector3(0.0f, 1.0f, 0.0f); //What direction is forward
+	vector3 m_v3Right = vector3(1.0f, 0.0f, 0.0f); //What direction is to the right
+	vector3 m_v3Up = vector3(0.0f, 1.0f, 0.0f); //What direction is upward
 
 	bool m_bPerspective = true; //perspective view? False is Orthographic
 
