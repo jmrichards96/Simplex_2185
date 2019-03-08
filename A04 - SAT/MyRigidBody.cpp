@@ -350,7 +350,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	v3Edges[13] = glm::cross(v3Edges[2], v3Edges[4]);
 	v3Edges[14] = glm::cross(v3Edges[2], v3Edges[5]);
 
-
+	// See if projections overlap
 	for (uint axis = 0; axis < 15; ++axis)
 	{
 		if (v3Edges[axis] == ZERO_V3)
