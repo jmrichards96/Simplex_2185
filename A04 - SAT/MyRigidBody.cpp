@@ -287,6 +287,95 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
 
+	//Calculate the 8 corners of the cube
+	vector3 v3Corner[8];
+	//Back square
+	v3Corner[0] = m_v3MinL;
+	v3Corner[1] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MinL.z);
+	v3Corner[2] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MinL.z);
+	v3Corner[3] = vector3(m_v3MaxL.x, m_v3MaxL.y, m_v3MinL.z);
+
+	//Front square
+	v3Corner[4] = vector3(m_v3MinL.x, m_v3MinL.y, m_v3MaxL.z);
+	v3Corner[5] = vector3(m_v3MaxL.x, m_v3MinL.y, m_v3MaxL.z);
+	v3Corner[6] = vector3(m_v3MinL.x, m_v3MaxL.y, m_v3MaxL.z);
+	v3Corner[7] = m_v3MaxL;
+
+	//Place them in world space
+	for (uint uIndex = 0; uIndex < 8; ++uIndex)
+	{
+		v3Corner[uIndex] = vector3(m_m4ToWorld * vector4(v3Corner[uIndex], 1.0f));
+	}
+
+	//Calculate the 8 corners of the second cube
+	vector3 v3Corner2[8];
+	//Back square
+	v3Corner2[0] = a_pOther->m_v3MinL;
+	v3Corner2[1] = vector3(a_pOther->m_v3MaxL.x, a_pOther->m_v3MinL.y, a_pOther->m_v3MinL.z);
+	v3Corner2[2] = vector3(a_pOther->m_v3MinL.x, a_pOther->m_v3MaxL.y, a_pOther->m_v3MinL.z);
+	v3Corner2[3] = vector3(a_pOther->m_v3MaxL.x, a_pOther->m_v3MaxL.y, a_pOther->m_v3MinL.z);
+
+	//Front square
+	v3Corner2[4] = vector3(a_pOther->m_v3MinL.x, a_pOther->m_v3MinL.y, a_pOther->m_v3MaxL.z);
+	v3Corner2[5] = vector3(a_pOther->m_v3MaxL.x, a_pOther->m_v3MinL.y, a_pOther->m_v3MaxL.z);
+	v3Corner2[6] = vector3(a_pOther->m_v3MinL.x, a_pOther->m_v3MaxL.y, a_pOther->m_v3MaxL.z);
+	v3Corner2[7] = a_pOther->m_v3MaxL;
+
+	//Place them in world space
+	for (uint uIndex = 0; uIndex < 8; ++uIndex)
+	{
+		v3Corner2[uIndex] = vector3(a_pOther->m_m4ToWorld * vector4(v3Corner2[uIndex], 1.0f));
+	}
+
+	vector3 v3Edges[15];
+
+	// Find 3 axis for the cube
+	v3Edges[0] = v3Corner[1] - v3Corner[0];
+	v3Edges[1] = v3Corner[2] - v3Corner[0];
+	v3Edges[2] = v3Corner[4] - v3Corner[0];
+
+	// Find 3 axis for the back cube
+	v3Edges[3] = v3Corner2[1] - v3Corner2[0];
+	v3Edges[4] = v3Corner2[2] - v3Corner2[0];
+	v3Edges[5] = v3Corner2[4] - v3Corner2[0];
+
+	// Find axis for crosses
+	v3Edges[6] = glm::cross(v3Edges[0], v3Edges[3]);
+	v3Edges[7] = glm::cross(v3Edges[0], v3Edges[4]);
+	v3Edges[8] = glm::cross(v3Edges[0], v3Edges[5]);
+	v3Edges[9] = glm::cross(v3Edges[1], v3Edges[3]);
+	v3Edges[10] = glm::cross(v3Edges[1], v3Edges[4]);
+	v3Edges[11] = glm::cross(v3Edges[1], v3Edges[5]);
+	v3Edges[12] = glm::cross(v3Edges[2], v3Edges[3]);
+	v3Edges[13] = glm::cross(v3Edges[2], v3Edges[4]);
+	v3Edges[14] = glm::cross(v3Edges[2], v3Edges[5]);
+
+
+	for (uint axis = 0; axis < 15; ++axis)
+	{
+		float aMin = glm::dot(v3Corner[0], v3Edges[axis]);
+		float aMax = aMin;
+		float bMin = glm::dot(v3Corner2[0], v3Edges[axis]);
+		float bMax = bMin;
+
+		for (uint i = 1; i < 8; i++) {
+			float aDist = glm::dot(v3Corner[i], v3Edges[axis]);
+			aMin = (aDist < aMin) ? aDist : aMin;
+			aMax = (aDist > aMax) ? aDist : aMax;
+			float bDist = glm::dot(v3Corner[i], v3Edges[axis]);
+			bMin = (bDist < bMin) ? bDist : bMin;
+			bMax = (bDist > bMax) ? bDist : bMax;
+		}
+
+		// One-dimensional intersection test between a and b
+		float longSpan = std::max(aMax, bMax) - std::min(aMin, bMin);
+		float sumSpan = aMax - aMin + bMax - bMin;
+		if (longSpan > sumSpan)
+		{
+			return axis + 1;
+		}
+	}
+
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
 }
