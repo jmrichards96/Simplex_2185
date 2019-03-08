@@ -353,6 +353,9 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 
 	for (uint axis = 0; axis < 15; ++axis)
 	{
+		if (v3Edges[axis] == ZERO_V3)
+			continue;
+
 		float aMin = glm::dot(v3Corner[0], v3Edges[axis]);
 		float aMax = aMin;
 		float bMin = glm::dot(v3Corner2[0], v3Edges[axis]);
@@ -362,7 +365,7 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 			float aDist = glm::dot(v3Corner[i], v3Edges[axis]);
 			aMin = (aDist < aMin) ? aDist : aMin;
 			aMax = (aDist > aMax) ? aDist : aMax;
-			float bDist = glm::dot(v3Corner[i], v3Edges[axis]);
+			float bDist = glm::dot(v3Corner2[i], v3Edges[axis]);
 			bMin = (bDist < bMin) ? bDist : bMin;
 			bMax = (bDist > bMax) ? bDist : bMax;
 		}
