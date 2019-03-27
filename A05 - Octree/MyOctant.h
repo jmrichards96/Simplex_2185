@@ -1,6 +1,6 @@
 /*----------------------------------------------
-Programmer: Alberto Bobadilla (labigm@gmail.com)
-Date: 2017/07
+Programmer: Josh Richards (jmr8776@rit.edu)
+Date: 2019/03
 ----------------------------------------------*/
 #ifndef __MYOCTANTCLASS_H_
 #define __MYOCTANTCLASS_H_
@@ -9,6 +9,7 @@ Date: 2017/07
 
 namespace Simplex
 {
+class MyEntityManager;
 
 //System Class
 class MyOctant
