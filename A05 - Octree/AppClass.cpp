@@ -50,7 +50,7 @@ void Application::Update(void)
 	//Add objects to render list
 	m_pEntityMngr->AddEntityToRenderList(-1, true);
 
-	if (m_uOctantID == -1)
+	if (m_uOctantID >= m_pRoot->GetOctantCount())
 	{
 		m_pRoot->DisplayLeafs();
 	}
