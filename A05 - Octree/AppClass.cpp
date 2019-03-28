@@ -30,7 +30,7 @@ void Application::InitVariables(void)
 		}
 	}
 	m_uOctantLevels = 1;
-	m_pOctantRoot = new MyOctant(2, 5);
+	m_pRoot = new MyOctant(m_uOctantLevels, 5);
 	m_pEntityMngr->Update();
 }
 void Application::Update(void)
@@ -50,7 +50,14 @@ void Application::Update(void)
 	//Add objects to render list
 	m_pEntityMngr->AddEntityToRenderList(-1, true);
 
-	m_pOctantRoot->DisplayLeafs();
+	if (m_uOctantID == -1)
+	{
+		m_pRoot->DisplayLeafs();
+	}
+	else
+	{
+		m_pRoot->Display(m_uOctantID);
+	}
 }
 void Application::Display(void)
 {
@@ -77,7 +84,7 @@ void Application::Display(void)
 }
 void Application::Release(void)
 {
-	SafeDelete(m_pOctantRoot);
+	SafeDelete(m_pRoot);
 	//release GUI
 	ShutdownGUI();
 }

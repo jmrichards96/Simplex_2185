@@ -121,7 +121,7 @@ public:
 	- vector3 a_v3Color = REYELLOW -> Color of the volume to display.
 	OUTPUT: ---
 	*/
-	void Display(uint a_nIndex, vector3 a_v3Color = C_YELLOW);
+	bool Display(uint a_nIndex, vector3 a_v3Color = C_YELLOW);
 	/*
 	USAGE: Displays the MyOctant volume in the color specified
 	ARGUMENTS:
