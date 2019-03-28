@@ -187,6 +187,7 @@ bool Simplex::MyOctant::Display(uint a_nIndex, vector3 a_v3Color)
 		return true;
 	}
 	for (uint i = 0; i < m_uChildren; ++i) {
+		// Break out of this recursive search once the desired index is found
 		if (m_pChild[i]->Display(a_nIndex, a_v3Color))
 		{
 			return true;
@@ -202,31 +203,37 @@ void Simplex::MyOctant::Display(vector3 a_v3Color)
 
 void Simplex::MyOctant::DisplayLeafs(vector3 a_v3Color)
 {
+	// Do not display empty octants
 	if (m_EntityList.size() < 1) 
 	{
 		return;
 	}
+	// Only display leaf octants
 	if (IsLeaf()) 
 	{
 		this->Display(a_v3Color);
 		return;
 	}
+	// Recursively find and display all leafs
 	for (uint i = 0; i < m_uChildren; ++i) 
 	{
-		m_pChild[i]->DisplayLeafs();
+		m_pChild[i]->DisplayLeafs(a_v3Color);
 	}
 }
 
 void Simplex::MyOctant::ClearEntityList(void)
 {
-	m_EntityList.clear();
+	// Recursively clear all child entity lists
 	for (uint i = 0; i < m_uChildren; ++i) {
 		m_pChild[i]->ClearEntityList();
 	}
+	// Clear this entity list
+	m_EntityList.clear();
 }
 
 void Simplex::MyOctant::Subdivide(void)
 {
+	// Get each corner of this octant
 	vector3 corner[8];
 	corner[0] = m_v3Min;
 	corner[1] = vector3(m_v3Max.x, m_v3Min.y, m_v3Min.z);
@@ -236,6 +243,8 @@ void Simplex::MyOctant::Subdivide(void)
 	corner[5] = vector3(m_v3Min.x, m_v3Max.y, m_v3Min.z);
 	corner[6] = vector3(m_v3Max.x, m_v3Max.y, m_v3Min.z);
 	corner[7] = m_v3Max;
+
+	// Create 8 children for this octant
 	m_uChildren = 8;
 	for (uint i = 0; i < m_uChildren; ++i) 
 	{
@@ -245,6 +254,7 @@ void Simplex::MyOctant::Subdivide(void)
 		m_pChild[i]->m_uChildren = 0;
 		m_pChild[i]->m_pRoot = this->m_pRoot;
 
+		// Determine all entities that belong in each child octant
 		uint totalEntities = m_EntityList.size();
 		for (uint j = 0; j < totalEntities; ++j)
 		{
@@ -292,15 +302,18 @@ void Simplex::MyOctant::KillBranches(void)
 
 void Simplex::MyOctant::ConstructTree(uint a_nMaxLevel)
 {
+	// Do not subdivide further than the max level
 	if (m_uLevel >= a_nMaxLevel)
 	{
 		return;
 	}
+	// Do not subdivide if we have less than or equal to the ideal entity count in this octant
 	if (m_uIdealEntityCount >= m_EntityList.size())
 	{
 		return;
 	}
 	Subdivide();
+	// Try to subdivide all child octants
 	for (uint i = 0; i < m_uChildren; ++i)
 	{
 		m_pChild[i]->ConstructTree(a_nMaxLevel);
@@ -315,6 +328,7 @@ void Simplex::MyOctant::AssignIDtoEntity(void)
 		uint entitiesInLeaf = m_lChild[i]->m_EntityList.size();
 		for (int j = 0; j < entitiesInLeaf; ++j)
 		{
+			// Add dimensions to entities based on the current leaf octants
 			m_pEntityMngr->AddDimension(m_lChild[i]->m_EntityList[j], m_lChild[i]->m_uID);
 		}
 
@@ -333,7 +347,9 @@ void Simplex::MyOctant::Release(void)
 	m_pParent = nullptr; 
 	m_pRoot = nullptr;
 
+	ClearEntityList();
 	KillBranches();
+	m_lChild.clear();
 
 	--m_uOctantCount;
 }
@@ -373,10 +389,12 @@ void Simplex::MyOctant::ConstructList(void)
 	{
 		if (ContainsMoreThan(0))
 		{
+			// Store all non-empty leafs
 			m_pRoot->m_lChild.push_back(this);
 		}
 		return;
 	}
+	// Find all leaf octants that contain entities
 	for (uint i = 0; i < m_uChildren; ++i)
 	{
 		m_pChild[i]->ConstructList();
