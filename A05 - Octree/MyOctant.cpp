@@ -220,7 +220,7 @@ void Simplex::MyOctant::DisplayLeafs(vector3 a_v3Color)
 void Simplex::MyOctant::ClearEntityList(void)
 {
 	m_EntityList.clear();
-	for (uint i; i < m_uChildren; ++i) {
+	for (uint i = 0; i < m_uChildren; ++i) {
 		m_pChild[i]->ClearEntityList();
 	}
 }
