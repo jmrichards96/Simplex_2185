@@ -11,20 +11,28 @@ Simplex::MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 
 	m_uMaxLevel = a_nMaxLevel;
 	m_uIdealEntityCount = a_nIdealEntityCount;
+	m_pRoot = this;
+	m_uID = 0;
+	m_uLevel = 0;
 
 	uint entityCount = m_pEntityMngr->GetEntityCount();
 	
 	// Determine the minimum and maximum coords of this octant
-	for (int i = 0; i < entityCount; ++i) {
-		vector3 entityPos = vector3(m_pEntityMngr->GetEntity(i)->GetModelMatrix() * vector4(ZERO_V3, 1.0f));
+	// Add all entities to the entity list
+	for (uint i = 0; i < entityCount; ++i) 
+	{
+		vector3 entityMax = vector3(m_pEntityMngr->GetEntity(i)->GetRigidBody()->GetMaxGlobal());
+		vector3 entityMin = vector3(m_pEntityMngr->GetEntity(i)->GetRigidBody()->GetMinGlobal());
 
-		m_v3Min.x = (entityPos.x < m_v3Min.x) ? entityPos.x : m_v3Min.x;
-		m_v3Min.y = (entityPos.y < m_v3Min.y) ? entityPos.y : m_v3Min.y;
-		m_v3Min.z = (entityPos.z < m_v3Min.z) ? entityPos.z : m_v3Min.z;
+		m_v3Min.x = (entityMin.x < m_v3Min.x) ? entityMin.x : m_v3Min.x;
+		m_v3Min.y = (entityMin.y < m_v3Min.y) ? entityMin.y : m_v3Min.y;
+		m_v3Min.z = (entityMin.z < m_v3Min.z) ? entityMin.z : m_v3Min.z;
 
-		m_v3Max.x = (entityPos.x > m_v3Max.x) ? entityPos.x : m_v3Max.x;
-		m_v3Max.y = (entityPos.y > m_v3Max.y) ? entityPos.y : m_v3Max.y;
-		m_v3Max.z = (entityPos.z > m_v3Max.z) ? entityPos.z : m_v3Max.z;
+		m_v3Max.x = (entityMax.x > m_v3Max.x) ? entityMax.x : m_v3Max.x;
+		m_v3Max.y = (entityMax.y > m_v3Max.y) ? entityMax.y : m_v3Max.y;
+		m_v3Max.z = (entityMax.z > m_v3Max.z) ? entityMax.z : m_v3Max.z;
+
+		m_EntityList.push_back(i);
 	}
 
 	// Determine the center of this octant
@@ -35,13 +43,38 @@ Simplex::MyOctant::MyOctant(uint a_nMaxLevel, uint a_nIdealEntityCount)
 	m_fSize = (m_v3Max.y - m_v3Min.y) > m_fSize ? (m_v3Max.y - m_v3Min.y) : m_fSize;
 	m_fSize = (m_v3Max.z - m_v3Min.z) > m_fSize ? (m_v3Max.z - m_v3Min.z) : m_fSize;
 
+	m_v3Min = m_v3Center - vector3(m_fSize / 2.0f);
+	m_v3Max = m_v3Center + vector3(m_fSize / 2.0f);
+
+	// Subdivide the tree based on the given max level and ideal entity count
+	ConstructTree(m_uMaxLevel);
+
+	// Get all leaf nodes that have entities
+	ConstructList();
+
+	// Give IDs to all non-empty leaves
+	AssignIDtoEntity();
+
+	// Add dimensions based on the current octants
+	uint totalNonEmptyLeafs = m_lChild.size();
+	for (int i = 0; i < totalNonEmptyLeafs; ++i)
+	{
+		uint entitiesInLeaf = m_lChild[i]->m_EntityList.size();
+		for (int j = 0; j < entitiesInLeaf; ++j)
+		{
+			m_pEntityMngr->AddDimension(m_lChild[i]->m_EntityList[j], m_lChild[i]->m_uID);
+		}
+
+	}
 }
 
 Simplex::MyOctant::MyOctant(vector3 a_v3Center, float a_fSize)
 {
 	Init();
-	m_v3Center = m_v3Center;
+	m_v3Center = a_v3Center;
 	m_fSize = a_fSize;
+	m_v3Min = vector3(m_v3Center) - vector3(m_fSize / 2.0f);
+	m_v3Max = vector3(m_v3Center) + vector3(m_fSize / 2.0f);
 }
 
 Simplex::MyOctant::MyOctant(MyOctant const & other)
@@ -64,7 +97,8 @@ Simplex::MyOctant::MyOctant(MyOctant const & other)
 	m_v3Max = other.m_v3Max;
 
 	m_pParent = other.m_pParent;
-	for (int i = 0; i < (sizeof(m_pChild) / sizeof(*m_pChild)); ++i) {
+	for (int i = 0; i < (sizeof(m_pChild) / sizeof(*m_pChild)); ++i) 
+	{
 		m_pChild[i] = other.m_pChild[i];
 	}
 	m_EntityList = other.m_EntityList;
@@ -137,7 +171,24 @@ vector3 Simplex::MyOctant::GetMaxGlobal(void)
 
 bool Simplex::MyOctant::IsColliding(uint a_uRBIndex)
 {
-	return false;
+	MyRigidBody* entityBody = m_pEntityMngr->GetEntity(a_uRBIndex)->GetRigidBody();
+
+	if (this->m_v3Max.x < entityBody->GetMinGlobal().x) //this to the right of other
+		return false;
+	if (this->m_v3Min.x > entityBody->GetMaxGlobal().x) //this to the left of other
+		return false;
+
+	if (this->m_v3Max.y < entityBody->GetMinGlobal().y) //this below of other
+		return false;
+	if (this->m_v3Min.y > entityBody->GetMaxGlobal().y) //this above of other
+		return false;
+
+	if (this->m_v3Max.z < entityBody->GetMinGlobal().z) //this behind of other
+		return false;
+	if (this->m_v3Min.z > entityBody->GetMaxGlobal().z) //this in front of other
+		return false;
+
+	return true;
 }
 
 void Simplex::MyOctant::Display(uint a_nIndex, vector3 a_v3Color)
@@ -151,14 +202,17 @@ void Simplex::MyOctant::Display(vector3 a_v3Color)
 
 void Simplex::MyOctant::DisplayLeafs(vector3 a_v3Color)
 {
-	if (m_EntityList.size() < 1) {
+	if (m_EntityList.size() < 1) 
+	{
 		return;
 	}
-	if (IsLeaf()) {
+	if (IsLeaf()) 
+	{
 		this->Display(a_v3Color);
 		return;
 	}
-	for (int i; i < m_uChildren; ++i) {
+	for (uint i = 0; i < m_uChildren; ++i) 
+	{
 		m_pChild[i]->DisplayLeafs();
 	}
 }
@@ -166,23 +220,54 @@ void Simplex::MyOctant::DisplayLeafs(vector3 a_v3Color)
 void Simplex::MyOctant::ClearEntityList(void)
 {
 	m_EntityList.clear();
-	for (int i; i < m_uChildren; ++i) {
+	for (uint i; i < m_uChildren; ++i) {
 		m_pChild[i]->ClearEntityList();
 	}
 }
 
 void Simplex::MyOctant::Subdivide(void)
 {
+	vector3 corner[8];
+	corner[0] = m_v3Min;
+	corner[1] = vector3(m_v3Min.x, m_v3Min.y, m_v3Max.z);
+	corner[2] = vector3(m_v3Max.x, m_v3Min.y, m_v3Min.z);
+	corner[3] = vector3(m_v3Min.x, m_v3Max.y, m_v3Min.z);
+	corner[4] = vector3(m_v3Min.x, m_v3Max.y, m_v3Max.z);
+	corner[5] = vector3(m_v3Max.x, m_v3Min.y, m_v3Max.z);
+	corner[6] = vector3(m_v3Max.x, m_v3Max.y, m_v3Min.z);
+	corner[7] = m_v3Max;
+	m_uChildren = 8;
+	for (uint i = 0; i < m_uChildren; ++i) 
+	{
+		m_pChild[i] = new MyOctant((corner[i] + m_v3Center) / 2, m_fSize / 2);
+		m_pChild[i]->m_pParent = this;
+		m_pChild[i]->m_uLevel = this->m_uLevel + 1;
+		m_pChild[i]->m_uChildren = 0;
+		m_pChild[i]->m_pRoot = this->m_pRoot;
+
+		uint totalEntities = m_EntityList.size();
+		for (uint j = 0; j < totalEntities; ++j)
+		{
+			if (m_pChild[i]->IsColliding(m_EntityList[j]))
+			{
+				m_pChild[i]->m_EntityList.push_back(m_EntityList[j]);
+			}
+		}
+	}
 }
 
 MyOctant * Simplex::MyOctant::GetChild(uint a_nChild)
 {
-	return m_pChild[a_nChild];
+	if (a_nChild < m_uChildren) 
+	{
+		return m_pChild[a_nChild];
+	}
+	return nullptr;
 }
 
 MyOctant * Simplex::MyOctant::GetParent(void)
 {
-	return nullptr;
+	return m_pParent;
 }
 
 bool Simplex::MyOctant::IsLeaf(void)
@@ -192,24 +277,48 @@ bool Simplex::MyOctant::IsLeaf(void)
 
 bool Simplex::MyOctant::ContainsMoreThan(uint a_nEntities)
 {
-	return false;
+	return m_EntityList.size() > a_nEntities;
 }
 
 void Simplex::MyOctant::KillBranches(void)
 {
+	for (uint i = 0; i < m_uChildren; ++i)
+	{
+		SafeDelete(m_pChild[0]);
+		m_pChild[i] = nullptr;
+	}
+	m_uChildren = 0;
 }
 
 void Simplex::MyOctant::ConstructTree(uint a_nMaxLevel)
 {
+	if (m_uLevel >= a_nMaxLevel)
+	{
+		return;
+	}
+	if (m_uIdealEntityCount >= m_EntityList.size())
+	{
+		return;
+	}
+	Subdivide();
+	for (uint i = 0; i < m_uChildren; ++i)
+	{
+		m_pChild[i]->ConstructTree(a_nMaxLevel);
+	}
 }
 
 void Simplex::MyOctant::AssignIDtoEntity(void)
 {
+	uint totalNonEmptyLeafs = m_lChild.size();
+	for (uint i = 0; i < totalNonEmptyLeafs; ++i)
+	{
+		m_lChild[i]->m_uID = i + 1;
+	}
 }
 
 uint Simplex::MyOctant::GetOctantCount(void)
 {
-	return uint();
+	return m_uOctantCount;
 }
 
 void Simplex::MyOctant::Release(void)
@@ -219,9 +328,9 @@ void Simplex::MyOctant::Release(void)
 	m_pParent = nullptr; 
 	m_pRoot = nullptr;
 
-	for (int i = 0; i < m_uChildren; ++i) {
-		SafeDelete(m_pChild[i]);
-	}
+	KillBranches();
+
+	--m_uOctantCount;
 }
 
 void Simplex::MyOctant::Init(void)
@@ -250,8 +359,22 @@ void Simplex::MyOctant::Init(void)
 
 	m_pRoot = nullptr;
 	m_lChild.clear();
+
+	++m_uOctantCount;
 }
 
 void Simplex::MyOctant::ConstructList(void)
 {
+	if (IsLeaf())
+	{
+		if (ContainsMoreThan(0))
+		{
+			m_pRoot->m_lChild.push_back(this);
+		}
+		return;
+	}
+	for (uint i = 0; i < m_uChildren; ++i)
+	{
+		m_pChild[i]->ConstructList();
+	}
 }
